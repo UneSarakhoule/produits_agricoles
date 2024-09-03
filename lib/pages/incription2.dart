@@ -292,23 +292,6 @@ class _Inscription extends State<Inscription> {
               ],
             ),
           ),
-          // DropdownMenuItem(
-          //   value: 'LES DEUX',
-          //   child: Row(
-          //     children: [
-          //       Icon(
-          //         Icons.people,
-          //         color: myConstants.color7,
-          //         size: 18,
-          //       ),
-          //       const SizedBox(width: 13),
-          //       Text(
-          //         'LES DEUX',
-          //         style: TextStyle(fontSize: 13, color: myConstants.color7),
-          //       ),
-          //     ],
-          //   ),
-          // ),
         ],
         onChanged: (value) {
           setState(() {

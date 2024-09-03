@@ -21,7 +21,6 @@ class _AjoutProduitState extends State<AjoutProduit> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _stockController = TextEditingController();
-  final TextEditingController _imageUrlController = TextEditingController();
   String? _selectedCategory;
   File? _imageFile; // Variable pour stocker l'image sélectionnée
 
