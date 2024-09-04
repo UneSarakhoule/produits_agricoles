@@ -7,7 +7,7 @@ class ThemeProvider with ChangeNotifier{
   bool get getIsDarkTheme => _darkTheme;
 
   ThemeProvider(){
-    getTheme(themevalue: true);
+    getTheme();
   }
 
   Future<void> setDarkTheme({required bool themevalue}) async{
@@ -19,7 +19,7 @@ class ThemeProvider with ChangeNotifier{
     notifyListeners();
   }
 
-  Future<bool> getTheme({required bool themevalue}) async{
+  Future<bool> getTheme() async{
 
     SharedPreferences preferences = await SharedPreferences.getInstance();
     _darkTheme = preferences.getBool(themeStatus) ?? false;

@@ -1,6 +1,6 @@
 import 'package:agricol/provider/theme_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
 import '../../models/constants.dart';
 import 'package:get/get.dart';
 
@@ -114,7 +114,7 @@ class _SettingsState extends State<Settings> {
                 children: [
                   SwitchListTile(
                       title: Text(
-                        themeProvider.getIsDarkTheme? "Dark Mode" : "Light Mode",
+                        themeProvider.getIsDarkTheme? "Thème Sombre" : "Thème Claire",
                           style: TextStyle(
                             fontSize: 18,
                             fontFamily: 'Calibri',
