@@ -1,5 +1,6 @@
+import 'package:agricol/provider/theme_provider.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 import '../../models/constants.dart';
 import 'package:get/get.dart';
 
@@ -11,15 +12,17 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  bool isDarkTheme = false; // Initialisation de la variable isDarkTheme
 
   String? selectedType = 'Français';
 
   @override
   Widget build(BuildContext context) {
     Constants myConstants = Constants();
+
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       backgroundColor: myConstants.secondaryColor,
       body: Padding(
@@ -109,31 +112,19 @@ class _SettingsState extends State<Settings> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Theme',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontFamily: 'Calibri',
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  CheckboxListTile(
-                    title: const Text('Dark'),
-                    value: isDarkTheme,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        isDarkTheme = value ?? false;
-                      });
-                    },
-                  ),
-                  CheckboxListTile(
-                    title: const Text('Light'),
-                    value: !isDarkTheme,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        isDarkTheme = !(value ?? true);
-                      });
-                    },
+                  SwitchListTile(
+                      title: Text(
+                        themeProvider.getIsDarkTheme? "Dark Mode" : "Light Mode",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontFamily: 'Calibri',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      value: themeProvider.getIsDarkTheme,
+                      onChanged: (value){
+                        themeProvider.setDarkTheme(themevalue: value);
+                      }
                   ),
                 ],
               ),

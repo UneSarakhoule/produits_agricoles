@@ -64,7 +64,7 @@ class Appbar extends StatelessWidget implements PreferredSizeWidget {
               ),
               const SizedBox(width: 8),
               const Text(
-                'AgroDream',
+                'AGRIINNOVATE',
               ),
             ],
           ),

@@ -16,7 +16,7 @@ class ProductListByCategory extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Produits - $category'),
+        title: Text('Produits - $category/kg'),
         backgroundColor: myConstants.thirtyColor,
       ),
       body: StreamBuilder(

@@ -389,6 +389,7 @@ class _Inscription extends State<Inscription> {
           'email': email,
           'type': selectedType,
           'photoURL': 'assets/images/userLogo.png',
+          'dateInscrit': FieldValue.serverTimestamp(),
         });
 
         // Redirigez vers la page de connexion
