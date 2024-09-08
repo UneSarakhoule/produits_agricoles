@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../models/constants.dart';
 import '../../models/addCart.dart';
+import '../../panier/cardService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
+import '../../models/constants.dart';
 
 class Panier extends StatefulWidget {
   const Panier({super.key});
@@ -12,6 +13,17 @@ class Panier extends StatefulWidget {
 }
 
 class _PanierState extends State<Panier> {
+  late Cart cart;
+
+  @override
+  void initState() {
+    super.initState();
+    cart = Cart(); // Initialisez votre panier
+    CartService(cart).loadCartFromFirestore().then((_) {
+      print('Cart loaded');
+    });
+  }
+
   int calculateTotalPrice() {
     int totalPrice = 0;
     for (var item in cart.items) {
@@ -25,15 +37,15 @@ class _PanierState extends State<Panier> {
     setState(() {
       cart.items.removeAt(index);
     });
+    CartService(cart).saveCartToFirestore();
   }
 
   Future<void> placeOrder() async {
-    // Récupérer l'ID de l'utilisateur actuellement connecté
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
       final order = {
-        'userId': user.uid, // Utiliser l'ID de l'utilisateur connecté
+        'userId': user.uid,
         'items': cart.items.map((item) => {
           'nomProduit': item.produit['nomProduit'],
           'quantité': item.quantity,
@@ -43,20 +55,16 @@ class _PanierState extends State<Panier> {
         'date': DateTime.now(),
       };
 
-      // Enregistrer la commande dans Firestore
       await FirebaseFirestore.instance.collection('commandes').add(order);
 
-      // Vider le panier après la commande
       setState(() {
         cart.items.clear();
       });
 
-      // Afficher un message de confirmation
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Commande passée avec succès !')),
       );
     } else {
-      // Si l'utilisateur n'est pas connecté, afficher un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Veuillez vous connecter pour passer une commande.')),
       );
@@ -66,9 +74,7 @@ class _PanierState extends State<Panier> {
   @override
   Widget build(BuildContext context) {
     Constants myConstants = Constants();
-    
     int totalPrice = calculateTotalPrice();
-    
 
     return Scaffold(
       appBar: AppBar(
@@ -86,54 +92,38 @@ class _PanierState extends State<Panier> {
             child: cart.items.isEmpty
                 ? Center(child: Text('Votre panier est vide'))
                 : ListView.builder(
-                  itemCount: cart.items.length,
-                  itemBuilder: (context, index) {
-                    var item = cart.items[index];
-    
-                    // Convertir le prix en entier ou en double
-                    var price = int.tryParse(item.produit['prix'].toString()) ?? 0;
-    
-                    // Calculer le prix total pour cet article
-                    var itemTotalPrice = price * item.quantity;
-    
-                    return ListTile(
-                      leading: Image.network(item.produit['photos']),
-                      title: Text(item.produit['nomProduit']),
-                      subtitle: Text('Quantité: ${item.quantity}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('$itemTotalPrice FCFA'), // Afficher le prix total
-                          IconButton(
-                            icon: Icon(Icons.delete, color: myConstants.red),
-                            onPressed: () {
-                              removeItem(index); // Supprimer l'article
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+              itemCount: cart.items.length,
+              itemBuilder: (context, index) {
+                var item = cart.items[index];
+                var price = int.tryParse(item.produit['prix'].toString()) ?? 0;
+                var itemTotalPrice = price * item.quantity;
+
+                return ListTile(
+                  leading: Image.network(item.produit['photos']),
+                  title: Text(item.produit['nomProduit']),
+                  subtitle: Text('Prix: ${item.produit['prix']} FCFA\nQuantité: ${item.quantity}'),
+                  trailing: IconButton(
+                    icon: Icon(Icons.remove_shopping_cart),
+                    onPressed: () => removeItem(index),
+                  ),
+                  isThreeLine: true,
+                );
+              },
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Prix Total : $totalPrice FCFA',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                  'Total: $totalPrice FCFA',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {
-                    placeOrder(); // Passer la commande
-                  },
-                  child: Text('Valider le panier'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    textStyle: TextStyle(fontSize: 18),
-                  ),
+                  onPressed: placeOrder,
+                  child: Text('Passer la commande'),
                 ),
               ],
             ),

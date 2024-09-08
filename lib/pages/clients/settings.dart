@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import '../../models/constants.dart';
 import 'package:get/get.dart';
 
-class Settings extends StatefulWidget {
-  const Settings({super.key});
+class SettingsClient extends StatefulWidget {
+  const SettingsClient({super.key});
 
   @override
-  State<Settings> createState() => _SettingsState();
+  State<SettingsClient> createState() => _SettingsState();
 }
 
-class _SettingsState extends State<Settings> {
+class _SettingsState extends State<SettingsClient> {
 
   String? selectedType = 'Français';
 

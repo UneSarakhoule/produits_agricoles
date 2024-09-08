@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:agricol/models/addCart.dart';
+import '../../models/addCart.dart';
+import '../../panier/cardService.dart';
 import '../../models/constants.dart';
 
 class ProductDetails extends StatefulWidget {
@@ -18,16 +19,17 @@ class _ProductDetailsState extends State<ProductDetails> {
   @override
   Widget build(BuildContext context) {
     Constants myConstants = Constants();
+    Cart cart = Cart(); // Vous devrez obtenir la référence du panier
 
     return Scaffold(
       backgroundColor: myConstants.thirtyColor,
       appBar: AppBar(
         title: Text(widget.produit['nomProduit']),
         backgroundColor: myConstants.thirtyColor,
-        leading:
-        IconButton(
-          onPressed: (){
-            Navigator.pushNamed(context, '/bottomNavigation');},
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pushNamed(context, '/bottomNavigation');
+          },
           icon: Icon(Icons.arrow_back),
         ),
       ),
@@ -39,21 +41,18 @@ class _ProductDetailsState extends State<ProductDetails> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Section gauche avec les détails
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.produit['nomProduit'],
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 10),
                       Text(
                         '${widget.produit['prix']} FCFA',
-                        style: TextStyle(
-                            fontSize: 20, color: myConstants.vert2),
+                        style: TextStyle(fontSize: 20, color: myConstants.vert2),
                       ),
                       SizedBox(height: 10),
                       Text(
@@ -75,20 +74,18 @@ class _ProductDetailsState extends State<ProductDetails> {
                   ),
                 ),
                 SizedBox(width: 20),
-                // Photo du produit à droite
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: Image.network(
                     widget.produit['photos'],
                     height: 200,
-                    width: 150, // Vous pouvez ajuster la largeur ici
+                    width: 150,
                     fit: BoxFit.cover,
                   ),
                 ),
               ],
             ),
             SizedBox(height: 20),
-            // Description en dessous des deux sections
             Text(
               'Description:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -96,7 +93,6 @@ class _ProductDetailsState extends State<ProductDetails> {
             SizedBox(height: 10),
             Text(widget.produit['description']),
             SizedBox(height: 20),
-            // Section des boutons (Quantité et Ajouter au panier)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -136,11 +132,19 @@ class _ProductDetailsState extends State<ProductDetails> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Logique pour ajouter le produit au panier avec la quantité sélectionnée
-                  //print("Produit ajouté au panier : ${widget.produit.id} avec quantité $_quantity");
-                  cart.addItem(widget.produit, _quantity);
+                  CartItem newItem = CartItem(
+                    produit: {
+                      'nomProduit': widget.produit['nomProduit'],
+                      'prix': widget.produit['prix'],
+                      'photos': widget.produit['photos'],
+                      'stock': widget.produit['stock'],
+                    },
+                    quantity: _quantity,
+                  );
+                  cart.items.add(newItem);
 
-                  // Optionnel : Afficher un message de confirmation
+                  CartService(cart).saveCartToFirestore();
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Produit ajouté au panier")),
                   );

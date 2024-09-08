@@ -11,6 +11,7 @@ import 'package:agricol/pages/vendeur/acceuil.dart';
 import 'package:agricol/pages/vendeur/ajoutProduit.dart';
 import 'package:agricol/pages/vendeur/listeProduit.dart';
 import 'package:agricol/pages/vendeur/modifierProduit.dart';
+import 'package:agricol/pages/clients/settings.dart';
 import 'package:agricol/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
               '/modifierUser': (context) => const Modifieruser(), // Route modifier l'utilisateur
               '/modifierProduit': (context) => Modifierproduit(product: ModalRoute.of(context)!.settings.arguments as DocumentSnapshot), // Route pour la modification d'un produit
               '/historiqueCommandes': (context) => const Historiquecommandes(),
+              '/parametre': (context) => SettingsClient(),
 
             },
             debugShowCheckedModeBanner: false,

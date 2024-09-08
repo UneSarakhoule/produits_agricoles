@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'constants.dart';
 
 class Drawerclient extends StatelessWidget {
@@ -27,6 +29,23 @@ class Drawerclient extends StatelessWidget {
       'email': 'Email inconnu',
       'photoUrl': null,
     };
+  }
+
+  Future<String> _getAddress() async {
+    try {
+      // Obtenez la position actuelle
+      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+      // Obtenez l'adresse à partir des coordonnées
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      Placemark placemark = placemarks[0];
+
+      // Formatez l'adresse
+      String address = '${placemark.street ?? ''}, ${placemark.locality ?? ''}, ${placemark.postalCode ?? ''}, ${placemark.country ?? ''}';
+      return address;
+    } catch (e) {
+      return 'Adresse non disponible';
+    }
   }
 
   @override
@@ -82,9 +101,29 @@ class Drawerclient extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20),
-              ListTile(
-                leading: Icon(Icons.location_on_sharp),
-                title: Text('Votre adresse'),
+              FutureBuilder<String>(
+                future: _getAddress(),
+                builder: (context, addressSnapshot) {
+                  if (addressSnapshot.connectionState == ConnectionState.waiting) {
+                    return ListTile(
+                      leading: Icon(Icons.location_on_sharp),
+                      title: Text('Votre adresse'),
+                      subtitle: Text('Chargement...'),
+                    );
+                  } else if (addressSnapshot.hasError) {
+                    return ListTile(
+                      leading: Icon(Icons.location_on_sharp),
+                      title: Text('Votre adresse'),
+                      subtitle: Text('Erreur : ${addressSnapshot.error}'),
+                    );
+                  } else {
+                    return ListTile(
+                      leading: Icon(Icons.location_on_sharp),
+                      title: Text('Votre adresse'),
+                      subtitle: Text(addressSnapshot.data ?? 'Adresse non disponible'),
+                    );
+                  }
+                },
               ),
               SizedBox(height: 20),
               ListTile(
@@ -98,16 +137,6 @@ class Drawerclient extends StatelessWidget {
                 onTap: () {
                   Navigator.pushNamed(context, '/historiqueCommandes');
                 },
-              ),
-              SizedBox(height: 20),
-              ListTile(
-                leading: Icon(Icons.book),
-                title: Text('Condition d\'utilisation'),
-              ),
-              SizedBox(height: 20),
-              ListTile(
-                leading: Icon(Icons.question_answer_outlined),
-                title: Text('Contactez-nous'),
               ),
               SizedBox(height: 30),
               ListTile(
