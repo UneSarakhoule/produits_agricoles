@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../models/addCart.dart';
-import '../../panier/cardService.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import '../../models/constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../panier/cardItem.dart';
 
 class Panier extends StatefulWidget {
   const Panier({super.key});
@@ -18,9 +17,26 @@ class _PanierState extends State<Panier> {
   @override
   void initState() {
     super.initState();
-    cart = Cart(); // Initialisez votre panier
-    CartService(cart).loadCartFromFirestore().then((_) {
-      print('Cart loaded');
+    _checkUserAndLoadCart();
+  }
+
+  Future<void> _checkUserAndLoadCart() async {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      setState(() {
+        cart = Cart(user.uid); // Initialise le panier avec l'ID utilisateur
+      });
+      await _loadCartItems(); // Charge les articles du panier
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
+  Future<void> _loadCartItems() async {
+    final items = await cart.getItems();
+    setState(() {
+      cart.items = items;
     });
   }
 
@@ -28,7 +44,7 @@ class _PanierState extends State<Panier> {
     int totalPrice = 0;
     for (var item in cart.items) {
       int price = int.tryParse(item.produit['prix'].toString()) ?? 0;
-      totalPrice += price * item.quantity;
+      totalPrice += (price * item.quantity) as int;
     }
     return totalPrice;
   }
@@ -37,7 +53,6 @@ class _PanierState extends State<Panier> {
     setState(() {
       cart.items.removeAt(index);
     });
-    CartService(cart).saveCartToFirestore();
   }
 
   Future<void> placeOrder() async {
@@ -57,9 +72,7 @@ class _PanierState extends State<Panier> {
 
       await FirebaseFirestore.instance.collection('commandes').add(order);
 
-      setState(() {
-        cart.items.clear();
-      });
+      await cart.clear(); // Vide le panier après la commande
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Commande passée avec succès !')),
@@ -74,6 +87,7 @@ class _PanierState extends State<Panier> {
   @override
   Widget build(BuildContext context) {
     Constants myConstants = Constants();
+
     int totalPrice = calculateTotalPrice();
 
     return Scaffold(
@@ -101,12 +115,19 @@ class _PanierState extends State<Panier> {
                 return ListTile(
                   leading: Image.network(item.produit['photos']),
                   title: Text(item.produit['nomProduit']),
-                  subtitle: Text('Prix: ${item.produit['prix']} FCFA\nQuantité: ${item.quantity}'),
-                  trailing: IconButton(
-                    icon: Icon(Icons.remove_shopping_cart),
-                    onPressed: () => removeItem(index),
+                  subtitle: Text('Quantité: ${item.quantity}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('$itemTotalPrice FCFA'),
+                      IconButton(
+                        icon: Icon(Icons.delete, color: myConstants.red),
+                        onPressed: () {
+                          removeItem(index);
+                        },
+                      ),
+                    ],
                   ),
-                  isThreeLine: true,
                 );
               },
             ),
@@ -114,16 +135,21 @@ class _PanierState extends State<Panier> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Total: $totalPrice FCFA',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  'Prix Total : $totalPrice FCFA',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: placeOrder,
-                  child: Text('Passer la commande'),
+                  onPressed: () {
+                    placeOrder();
+                  },
+                  child: Text('Valider le panier'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    textStyle: TextStyle(fontSize: 18),
+                  ),
                 ),
               ],
             ),

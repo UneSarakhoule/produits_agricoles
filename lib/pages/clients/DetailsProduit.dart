@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../models/addCart.dart';
-import '../../panier/cardService.dart';
 import '../../models/constants.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../panier/cardItem.dart';
 
 class ProductDetails extends StatefulWidget {
   final QueryDocumentSnapshot produit;
@@ -14,12 +15,44 @@ class ProductDetails extends StatefulWidget {
 }
 
 class _ProductDetailsState extends State<ProductDetails> {
-  int _quantity = 1; // Quantité initiale
+  int _quantity = 1;
+  double _rating = 0.0;
+  int _totalReviews = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProductRating();
+  }
+
+  Future<void> _fetchProductRating() async {
+    try {
+      QuerySnapshot evaluationSnapshot = await FirebaseFirestore.instance
+          .collection('Evaluation')
+          .where('idProduits', isEqualTo: widget.produit.id)
+          .get();
+
+      if (evaluationSnapshot.docs.isNotEmpty) {
+        double totalRating = 0.0;
+        _totalReviews = evaluationSnapshot.docs.length;
+
+        for (var doc in evaluationSnapshot.docs) {
+          totalRating += (doc['note'] as double);
+        }
+
+        setState(() {
+          _rating = totalRating / _totalReviews;
+        });
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération des évaluations : $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     Constants myConstants = Constants();
-    Cart cart = Cart(); // Vous devrez obtenir la référence du panier
+    final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       backgroundColor: myConstants.thirtyColor,
@@ -60,16 +93,24 @@ class _ProductDetailsState extends State<ProductDetails> {
                         style: TextStyle(fontSize: 18),
                       ),
                       SizedBox(height: 20),
-                      Row(
-                        children: List.generate(5, (i) {
-                          return Icon(
-                            i < widget.produit['etoiles']
-                                ? Icons.star
-                                : Icons.star_border,
-                            color: myConstants.yellow,
-                          );
-                        }),
+                      RatingBar.builder(
+                        initialRating: _rating,
+                        minRating: 1,
+                        direction: Axis.horizontal,
+                        allowHalfRating: true,
+                        itemCount: 5,
+                        itemSize: 30.0,
+                        itemBuilder: (context, _) => Icon(
+                          Icons.star,
+                          color: myConstants.yellow,
+                        ),
+                        onRatingUpdate: (rating) {
+                          // Notez que cette fonction est juste ici pour l'exemple
+                        },
+                        ignoreGestures: true,
                       ),
+                      SizedBox(height: 8.0),
+                      Text('$_rating ($_totalReviews avis)'),
                     ],
                   ),
                 ),
@@ -131,30 +172,34 @@ class _ProductDetailsState extends State<ProductDetails> {
             SizedBox(height: 20),
             Center(
               child: ElevatedButton(
-                onPressed: () {
-                  CartItem newItem = CartItem(
-                    produit: {
-                      'nomProduit': widget.produit['nomProduit'],
-                      'prix': widget.produit['prix'],
-                      'photos': widget.produit['photos'],
-                      'stock': widget.produit['stock'],
-                    },
-                    quantity: _quantity,
-                  );
-                  cart.items.add(newItem);
+                onPressed: () async {
+                  final user = FirebaseAuth.instance.currentUser;
 
-                  CartService(cart).saveCartToFirestore();
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Produit ajouté au panier")),
-                  );
+                  if (user != null) {
+                    final cart = Cart(user.uid);
+                    try {
+                      await cart.addItem(widget.produit, _quantity);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Produit ajouté au panier")),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Erreur lors de l'ajout au panier: $e")),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Veuillez vous connecter pour ajouter au panier")),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: myConstants.vert2,
                 ),
                 child: Text('Ajouter au panier'),
               ),
-            ),
+            )
+
           ],
         ),
       ),

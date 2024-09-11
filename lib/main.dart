@@ -53,8 +53,8 @@ class MyApp extends StatelessWidget {
               '/connexion': (context) =>const  Connexion2(), // Route pour la page de connexion
               '/acceuilVendeur': (context) =>const  AcceuilVendeur(), //Route pour la page d'acceuil du vendeur
               '/acceuilClient': (context) => const BottomNavigation(), // Route pour la page d'acceuil du client
-              '/acceuilAdmin': (context) => const AcceuilAdmin(), // Route pour la page d'acceuil de l'admin
-              '/bottomNavigation': (context) => const BottomNavigation(), // Route pour la page d'acceuil de l'admin
+              '/acceuilAdmin': (context) => AcceuilAdmin(), // Route pour la page d'acceuil de l'admin
+              '/bottomNavigation': (context) => BottomNavigation(), // Route pour la page d'acceuil de l'admin
               '/ajoutProduit': (context) => const AjoutProduit(), // Route pour l'ajout d'un produit
               '/listeProduit': (context) => const Listeproduit(), // Route pour la liste des produits
               '/modifierUser': (context) => const Modifieruser(), // Route modifier l'utilisateur

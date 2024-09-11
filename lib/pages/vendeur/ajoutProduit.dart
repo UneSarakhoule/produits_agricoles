@@ -1,10 +1,10 @@
-import 'package:agricol/models/drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart'; // Ajout du package
 
 import '../../models/constants.dart';
 
@@ -22,9 +22,30 @@ class _AjoutProduitState extends State<AjoutProduit> {
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _stockController = TextEditingController();
   String? _selectedCategory;
-  File? _imageFile; // Variable pour stocker l'image sélectionnée
+  File? _imageFile;
+  double _rating = 3.0;
+  List<String> _categories = []; // Liste pour stocker les catégories
 
-  // Fonction pour sélectionner une image depuis la galerie ou la caméra
+  @override
+  void initState() {
+    super.initState();
+    _fetchCategories(); // Récupérer les catégories au démarrage de l'écran
+  }
+
+  // Fonction pour récupérer les catégories depuis Firestore
+  Future<void> _fetchCategories() async {
+    try {
+      CollectionReference categoriesRef = FirebaseFirestore.instance.collection('Category');
+      QuerySnapshot querySnapshot = await categoriesRef.get();
+
+      setState(() {
+        _categories = querySnapshot.docs.map((doc) => doc['nomCategory'] as String).toList();
+      });
+    } catch (e) {
+      print('Erreur lors de la récupération des catégories: $e');
+    }
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     final ImagePicker _picker = ImagePicker();
     final XFile? pickedFile = await _picker.pickImage(source: source);
@@ -38,49 +59,46 @@ class _AjoutProduitState extends State<AjoutProduit> {
 
   Future<void> _ajouterProduit() async {
     if (_formKey.currentState!.validate()) {
-      // Récupérer l'ID de l'utilisateur connecté
       User? user = FirebaseAuth.instance.currentUser;
       String userId = user?.uid ?? "ID inconnu";
-
-      // Générer un ID unique pour le produit
       String produitId = FirebaseFirestore.instance.collection('Produits').doc().id;
 
-      // URL de l'image à stocker
       String imageUrl = '';
 
+      // Vérification et upload de l'image
       if (_imageFile != null) {
         try {
-          // Stocker l'image dans Firebase Storage
           FirebaseStorage storage = FirebaseStorage.instance;
           Reference ref = storage.ref().child('produits/$produitId.jpg');
           UploadTask uploadTask = ref.putFile(_imageFile!);
-
-          // Attendre que l'upload soit terminé
           TaskSnapshot snapshot = await uploadTask;
 
-          // Obtenir l'URL de l'image
+          // Récupération de l'URL de l'image
           imageUrl = await snapshot.ref.getDownloadURL();
         } catch (e) {
           print("Erreur lors de l'upload de l'image : $e");
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'upload de l\'image')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erreur lors de l\'enregistrement de l\'image')));
           return;
         }
-
+      } else {
+        // Gestion du cas où aucune image n'est sélectionnée
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Veuillez sélectionner une image')));
+        return;
       }
 
-      // Enregistrer les données dans Firestore
+      // Enregistrement du produit dans Firestore avec l'URL de l'image
       CollectionReference produits = FirebaseFirestore.instance.collection('Produits');
       return produits.doc(produitId).set({
         'nomProduit': _nameController.text,
         'description': _descriptionController.text,
         'prix': _priceController.text,
         'stock': _stockController.text,
-        'photos': imageUrl, // URL de l'image dans Firebase Storage
+        'photos': imageUrl,  // URL de l'image stockée
         'categories': _selectedCategory,
         'dateAjout': FieldValue.serverTimestamp(),
-        'produitId': produitId, // ID généré automatiquement
-        'userId': userId, // ID de l'utilisateur connecté
-        'etoiles': 1, // un champs etoiles pour permettre au client de noter
+        'produitId': produitId,
+        'userId': userId,
+        'etoiles': _rating,
       }).then((value) {
         print("Produit ajouté avec succès");
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Produit ajouté avec succès')));
@@ -91,7 +109,6 @@ class _AjoutProduitState extends State<AjoutProduit> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     Constants myConstants = Constants();
@@ -99,7 +116,6 @@ class _AjoutProduitState extends State<AjoutProduit> {
       appBar: AppBar(
         title: Text("Ajouter un produit"),
       ),
-      drawer: DrawerVendeur(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -166,7 +182,7 @@ class _AjoutProduitState extends State<AjoutProduit> {
               ),
               SizedBox(height: 10),
               _imageFile != null
-                  ? Image.file(_imageFile!) // Afficher l'image sélectionnée
+                  ? Image.file(_imageFile!)
                   : Text("Aucune image sélectionnée"),
               SizedBox(height: 10),
               ElevatedButton.icon(
@@ -180,13 +196,14 @@ class _AjoutProduitState extends State<AjoutProduit> {
                 label: Text('Choisir depuis la galerie'),
               ),
               SizedBox(height: 10),
+              // DropdownButtonFormField pour les catégories
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 decoration: InputDecoration(
                   labelText: 'Catégorie',
                   border: OutlineInputBorder(),
                 ),
-                items: ['Fruits', 'Légumes', 'Epices'].map((String category) {
+                items: _categories.map((String category) {
                   return DropdownMenuItem<String>(
                     value: category,
                     child: Text(category),
@@ -204,7 +221,25 @@ class _AjoutProduitState extends State<AjoutProduit> {
                   return null;
                 },
               ),
-              SizedBox(height: 20),
+              // SizedBox(height: 20),
+              // RatingBar.builder(
+              //   initialRating: 3.0,
+              //   minRating: 1,
+              //   direction: Axis.horizontal,
+              //   allowHalfRating: true,
+              //   itemCount: 5,
+              //   itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+              //   itemBuilder: (context, _) => Icon(
+              //     Icons.star,
+              //     color: Colors.amber,
+              //   ),
+              //   onRatingUpdate: (rating) {
+              //     setState(() {
+              //       _rating = rating;
+              //     });
+              //   },
+              // ),
+              SizedBox(height: 40),
               ElevatedButton(
                 onPressed: _ajouterProduit,
                 child: Text('Ajouter le produit'),

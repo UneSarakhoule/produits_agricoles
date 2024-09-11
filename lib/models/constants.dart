@@ -30,4 +30,6 @@ class Constants{
   final Color red1 = const Color(0xFF366CF4);
   final Color red2 = const Color(0xFFB76E79);
   final Color yellow = const Color(0xFFFFEB3B);
+  final Color bleu = const Color(0xFF2196F3);
+  final Color gris3 = const Color(0xff37434d);
 }

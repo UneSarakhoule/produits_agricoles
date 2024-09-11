@@ -7,34 +7,66 @@ class CartItem {
   CartItem({required this.produit, required this.quantity});
 }
 
-
 class Cart {
+  final String userId;
   List<CartItem> items = [];
 
-  void addItem(QueryDocumentSnapshot produit, int quantity) {
+  Cart(this.userId);
+
+  Future<void> addItem(QueryDocumentSnapshot produit, int quantity) async {
     int stock = produit['stock'];
 
     if (quantity > stock) {
-      // Afficher un message ou gérer l'erreur
       print("Quantité demandée dépasse le stock disponible.");
-      return;
+      throw Exception("Quantité demandée dépasse le stock disponible.");
     }
 
-    var existingItemIndex = items.indexWhere((item) => item.produit.id == produit.id);
+    var cartRef = FirebaseFirestore.instance.collection('carts').doc(userId).collection('items');
+    var existingItemSnapshot = await cartRef.where('produitId', isEqualTo: produit.id).get();
 
-    if (existingItemIndex != -1) {
-      // Mettre à jour la quantité si l'article est déjà dans le panier
-      items[existingItemIndex].quantity += quantity;
+    if (existingItemSnapshot.docs.isNotEmpty) {
+      var doc = existingItemSnapshot.docs.first;
+      await doc.reference.update({
+        'quantity': (doc['quantity'] as int) + quantity,
+      });
     } else {
-      // Ajouter un nouvel article au panier
-      items.add(CartItem(produit: produit, quantity: quantity));
+      await cartRef.add({
+        'produitId': produit.id,
+        'nomProduit': produit['nomProduit'],
+        'prix': produit['prix'],
+        'quantity': quantity,
+      });
     }
   }
 
-  void clear() {
+
+  Future<void> clear() async {
+    final cartRef = FirebaseFirestore.instance.collection('carts').doc(userId);
+    final snapshot = await cartRef.collection('items').get();
+
+    for (var doc in snapshot.docs) {
+      await doc.reference.delete();
+    }
+
     items.clear();
   }
+
+  Future<List<CartItem>> getItems() async {
+    if (userId.isEmpty) {
+      return [];
+    }
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('carts')
+        .doc(userId)
+        .collection('items')
+        .get();
+
+    return snapshot.docs.map((doc) {
+      return CartItem(
+        produit: doc,
+        quantity: doc['quantity'] as int,
+      );
+    }).toList();
+  }
 }
-
-
-Cart cart = Cart(); // Instance globale de panier

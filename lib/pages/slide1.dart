@@ -29,12 +29,12 @@ class _Slide extends State<Slide1> with SingleTickerProviderStateMixin {
       end: const Offset(0.0, 1.0),
     ).animate(CurvedAnimation(
       parent: _controller!,
-      curve: Curves.easeOut,
+      curve: Curves.easeOutQuad,
     ));
 
     // Démarrage de l'animation après un délai
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Timer(const Duration(milliseconds: 100), () {
+      Timer(const Duration(milliseconds: 1000), () {
         _controller?.forward().whenComplete(() {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const Slide3()),
@@ -64,10 +64,10 @@ class _Slide extends State<Slide1> with SingleTickerProviderStateMixin {
             child: Container(
               color: myConstants.primaryColor, // Couleur de fond de Slide1
               child: Center(
-                child: Text(
-                  ' ', // Contenu de Slide1
-                  style: TextStyle(color: myConstants.thirtyColor, fontSize: 24),
-                ),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  height: 100,
+                )
               ),
             ),
           ),

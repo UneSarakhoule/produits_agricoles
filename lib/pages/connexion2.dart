@@ -50,7 +50,7 @@ class _Connexion2 extends State<Connexion2> {
                   child: Center(
                     child: Container(
                       width: screenWidth * 0.8,
-                      height: screenHeight * 0.6,
+                      height: screenHeight * 0.7,
                       decoration: ShapeDecoration(
                         color: myConstants.UnBlanc,
                         shape: RoundedRectangleBorder(
@@ -66,7 +66,7 @@ class _Connexion2 extends State<Connexion2> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SizedBox(height: screenHeight * 0.1),
+                            SizedBox(height: screenHeight * 0.15),
                             _buildTextField(
                               controller: _emailController,
                               hintText: 'Email',
@@ -85,8 +85,9 @@ class _Connexion2 extends State<Connexion2> {
                               errorMsg: passwordErrorMsg,
                               toggleObscureText: _toggleObscurePassword, // Passer la méthode de bascule
                             ),
-                            SizedBox(height: screenHeight * 0.08),
+                            SizedBox(height: screenHeight * 0.09),
                             _buildButton(myConstants),
+                            Spacer(),
                           ],
                         ),
                       ),
@@ -97,7 +98,7 @@ class _Connexion2 extends State<Connexion2> {
                 // Bouton retour
                 Positioned(
                   left: screenWidth * 0.17,
-                  top: screenHeight * 0.22,
+                  top: screenHeight * 0.18,
                   child: GestureDetector(
                     onTap: () {
                       Navigator.pushNamed(context, '/slide3');
@@ -111,6 +112,17 @@ class _Connexion2 extends State<Connexion2> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                  ),
+                ),
+
+                // Position de l'arc
+                Positioned(
+                  bottom: screenHeight * 0.15,
+                  left: screenWidth * 0.1,
+                  right: screenWidth * 0.1,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _buildArc(screenHeight,screenWidth),
                   ),
                 ),
 
@@ -144,20 +156,9 @@ class _Connexion2 extends State<Connexion2> {
                   ),
                 ),
 
-                // Position de l'arc
-                Positioned(
-                  bottom: screenHeight * 0.2,
-                  left: screenWidth * 0.1,
-                  right: screenWidth * 0.1,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: _buildArc(),
-                  ),
-                ),
-
                 // Mot de passe oublié
                 Positioned(
-                  bottom: screenHeight * 0.26,
+                  bottom: screenHeight * 0.234,
                   left: screenWidth * 0.4,
                   right: screenWidth * 0.1,
                   child: Column(
@@ -176,9 +177,10 @@ class _Connexion2 extends State<Connexion2> {
                     ],
                   ),
                 ),
+
                 // Creer un compte
                 Positioned(
-                  bottom: screenHeight * 0.10,
+                  bottom: screenHeight * 0.05,
                   left: screenWidth * 0.1,
                   right: screenWidth * 0.1,
                   child: Column(
@@ -188,7 +190,7 @@ class _Connexion2 extends State<Connexion2> {
                           Navigator.pushNamed(context, '/inscription');
                         },
                         child: Text(
-                          'Créer un Nouveau Compte',
+                          'Créer un Nouveau Compte ?',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: myConstants.gris,
@@ -294,14 +296,24 @@ class _Connexion2 extends State<Connexion2> {
     );
   }
 
-  Widget _buildArc() {
-    return Image.asset(
-      'assets/images/arc2.png',
-      width: 301,
-      fit: BoxFit.cover,
+  Widget _buildArc(double screenHeight, double screenWidth) {
+    return Positioned(
+      bottom: screenHeight * 0.2,
+      left: screenWidth * 0.1,
+      right: screenWidth * 0.1,
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Image.asset(
+          'assets/images/arc2.png',
+          width: 301,
+          fit: BoxFit.cover,
+        ),
+      ),
     );
   }
 
+
+  // GERER LES UTILISATEURS QUI NE CONNECTENT
   void _connexion() async {
     String email = _emailController.text;
     String password = _passwordController.text;
@@ -348,8 +360,6 @@ class _Connexion2 extends State<Connexion2> {
           Navigator.pushNamed(context, "/acceuilVendeur");
         } else if (userType == 'CLIENT') {
           Navigator.pushNamed(context, "/acceuilClient");
-        } else if (userType == 'LES DEUX') {
-          Navigator.pushNamed(context, "/acceuilClient");
         } else {
           print("Type d'utilisateur inconnu");
         }
@@ -360,5 +370,6 @@ class _Connexion2 extends State<Connexion2> {
       print("Erreur : $e");
     }
   }
+
 
 }

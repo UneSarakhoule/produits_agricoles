@@ -123,6 +123,20 @@ class _Inscription extends State<Inscription> {
                     ),
                   ),
                 ),
+
+                Positioned(
+                  bottom: screenHeight * 0.75,
+                  left: screenWidth * 0.1,
+                  right: screenWidth * 0.1,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Transform.rotate(
+                      angle: 3.14159,
+                      child: _buildArc(),
+                    ),
+                  ),
+                ),
+
                 Positioned(
                   left: screenWidth * 0.14,
                   top: screenHeight * 0.20,
@@ -141,18 +155,7 @@ class _Inscription extends State<Inscription> {
                     ),
                   ),
                 ),
-                Positioned(
-                  bottom: screenHeight * 0.75,
-                  left: screenWidth * 0.1,
-                  right: screenWidth * 0.1,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Transform.rotate(
-                      angle: 3.14159,
-                      child: _buildArc(),
-                    ),
-                  ),
-                ),
+
                 Positioned(
                   top: screenHeight * 0.14,
                   left: screenWidth * 0.47,
