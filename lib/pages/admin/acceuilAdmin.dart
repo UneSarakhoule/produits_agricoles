@@ -84,7 +84,7 @@ class _AcceuilAdminState extends State<AcceuilAdmin> {
               const SizedBox(height: 10),
 
               // Boutons de gestion des utilisateurs et produits
-              Admindiagram(),
+              const Admindiagram(),
             ],
           ),
         )

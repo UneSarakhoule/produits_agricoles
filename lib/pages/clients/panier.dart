@@ -49,11 +49,54 @@ class _PanierState extends State<Panier> {
     return totalPrice;
   }
 
-  void removeItem(int index) {
-    setState(() {
-      cart.items.removeAt(index);
-    });
+  Future<void> removeItem(int index) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final produitId = cart.items[index].produit.id;
+      final quantity = cart.items[index].quantity;
+
+      final cartRef = FirebaseFirestore.instance
+          .collection('Cart')
+          .doc(user.uid)
+          .collection('items');
+
+      try {
+        // Vérifiez si le document du panier de l'utilisateur existe
+        final snapshot = await cartRef.where('produitId', isEqualTo: produitId).get();
+
+        if (snapshot.docs.isEmpty) {
+          throw Exception("Le produit n'existe pas dans le panier.");
+        }
+
+        for (var doc in snapshot.docs) {
+          await doc.reference.delete();
+        }
+
+        await _updateProductStock(produitId, quantity);
+
+        await _loadCartItems();
+      } catch (e) {
+        print('Erreur lors de la suppression de l\'article : $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erreur lors de la suppression de l'article: $e")),
+        );
+      }
+    }
   }
+
+
+
+  Future<void> _updateProductStock(String produitId, int newStock) async {
+    var produitRef = FirebaseFirestore.instance.collection('Produits').doc(produitId);
+    var produitSnapshot = await produitRef.get();
+
+    if (!produitSnapshot.exists) {
+      throw Exception("Le produit n'existe pas dans Firestore.");
+    }
+
+    await produitRef.update({'stock': newStock});
+  }
+
 
   Future<void> placeOrder() async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -104,33 +147,35 @@ class _PanierState extends State<Panier> {
         children: [
           Expanded(
             child: cart.items.isEmpty
-                ? Center(child: Text('Votre panier est vide'))
+                ? Center(child:
+                  Text('Votre panier est vide')
+                )
                 : ListView.builder(
-              itemCount: cart.items.length,
-              itemBuilder: (context, index) {
-                var item = cart.items[index];
-                var price = int.tryParse(item.produit['prix'].toString()) ?? 0;
-                var itemTotalPrice = price * item.quantity;
+                    itemCount: cart.items.length,
+                    itemBuilder: (context, index) {
+                      var item = cart.items[index];
+                      var price = int.tryParse(item.produit['prix'].toString()) ?? 0;
+                      var itemTotalPrice = price * item.quantity;
 
-                return ListTile(
-                  leading: Image.network(item.produit['photos']),
-                  title: Text(item.produit['nomProduit']),
-                  subtitle: Text('Quantité: ${item.quantity}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('$itemTotalPrice FCFA'),
-                      IconButton(
-                        icon: Icon(Icons.delete, color: myConstants.red),
-                        onPressed: () {
-                          removeItem(index);
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                      return ListTile(
+                        leading: Image.network(item.produit['photos']),
+                        title: Text(item.produit['nomProduit']),
+                        subtitle: Text('Quantité: ${item.quantity}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('$itemTotalPrice FCFA'),
+                            IconButton(
+                              icon: Icon(Icons.delete, color: myConstants.red),
+                              onPressed: () {
+                                removeItem(index);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                ),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -142,7 +187,7 @@ class _PanierState extends State<Panier> {
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: cart.items.isEmpty ? null : () {
                     placeOrder();
                   },
                   child: Text('Valider le panier'),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:agricol/pages/clients/categories.dart';
 import 'package:agricol/models/drawerClient.dart';
 import 'package:agricol/models/constants.dart';
-import 'package:agricol/models/logo.dart';
+import 'package:agricol/models/logoClient.dart';
 
 class AcceuilClient extends StatelessWidget {
   const AcceuilClient({super.key});

@@ -52,9 +52,6 @@ class _AdmindiagramState extends State<Admindiagram> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inscriptions Mensuelles'),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: BarChart(mainBarData()),

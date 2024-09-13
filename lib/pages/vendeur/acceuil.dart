@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:agricol/models/constants.dart';
 import 'package:fl_chart/fl_chart.dart'; // Ajoute le package pour le graphique
 import '../../models/logo.dart';
+import 'package:agricol/diagramme/adminDiagram.dart';
 
 class AcceuilVendeur extends StatefulWidget {
   const AcceuilVendeur({super.key});

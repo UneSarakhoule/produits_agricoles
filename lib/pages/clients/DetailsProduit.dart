@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/constants.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../panier/cardItem.dart';
+import '../../panier/cardItem.dart'; // Assurez-vous que le chemin est correct
 
 class ProductDetails extends StatefulWidget {
   final QueryDocumentSnapshot produit;
@@ -54,6 +54,10 @@ class _ProductDetailsState extends State<ProductDetails> {
     Constants myConstants = Constants();
     final user = FirebaseAuth.instance.currentUser;
 
+    // Convertir les champs de 'prix' et 'stock' en entiers
+    int prix = int.tryParse(widget.produit['prix'].toString()) ?? 0;
+    int stock = int.tryParse(widget.produit['stock'].toString()) ?? 0;
+
     return Scaffold(
       backgroundColor: myConstants.thirtyColor,
       appBar: AppBar(
@@ -84,12 +88,12 @@ class _ProductDetailsState extends State<ProductDetails> {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        '${widget.produit['prix']} FCFA',
+                        '$prix FCFA', // Affichage du prix en entier
                         style: TextStyle(fontSize: 20, color: myConstants.vert2),
                       ),
                       SizedBox(height: 10),
                       Text(
-                        'Stock: ${widget.produit['stock']}',
+                        'Stock: $stock', // Affichage du stock en entier
                         style: TextStyle(fontSize: 18),
                       ),
                       SizedBox(height: 20),
@@ -105,7 +109,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                           color: myConstants.yellow,
                         ),
                         onRatingUpdate: (rating) {
-                          // Notez que cette fonction est juste ici pour l'exemple
+                          // Cette fonction peut être personnalisée pour permettre aux utilisateurs de donner des avis
                         },
                         ignoreGestures: true,
                       ),
@@ -160,9 +164,11 @@ class _ProductDetailsState extends State<ProductDetails> {
                     IconButton(
                       icon: Icon(Icons.add),
                       onPressed: () {
-                        setState(() {
-                          _quantity++;
-                        });
+                        if (_quantity < stock) {
+                          setState(() {
+                            _quantity++;
+                          });
+                        }
                       },
                     ),
                   ],
@@ -199,7 +205,6 @@ class _ProductDetailsState extends State<ProductDetails> {
                 child: Text('Ajouter au panier'),
               ),
             )
-
           ],
         ),
       ),

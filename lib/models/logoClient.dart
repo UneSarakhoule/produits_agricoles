@@ -72,7 +72,7 @@ class Appbar extends StatelessWidget implements PreferredSizeWidget {
           actions: [
             GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, '/modifierVendeur');
+                Navigator.pushNamed(context, '/modifierUser');
               },
               child: CircleAvatar(
                 radius: 15,

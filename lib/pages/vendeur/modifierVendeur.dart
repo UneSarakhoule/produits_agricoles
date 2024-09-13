@@ -7,14 +7,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-class Modifieruser extends StatefulWidget {
-  const Modifieruser({super.key});
+class Modifiervendeur extends StatefulWidget {
+  const Modifiervendeur({super.key});
 
   @override
-  State<Modifieruser> createState() => _ModifieruserState();
+  State<Modifiervendeur> createState() => _ModifiervendeurState();
 }
 
-class _ModifieruserState extends State<Modifieruser> {
+class _ModifiervendeurState extends State<Modifiervendeur> {
 
   String? _photoUrl;
   final ImagePicker _picker = ImagePicker();
@@ -85,14 +85,14 @@ class _ModifieruserState extends State<Modifieruser> {
           decoration: BoxDecoration(color: myConstants.thirtyColor),
           child: Stack(
             children: [
-              
+
               // Bouton retour
               Positioned(
                 left: screenWidth * 0.08,
                 top: screenHeight * 0.05,
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, '/acceuilClient');
+                    Navigator.pushNamed(context, '/acceuilVendeur');
                   },
                   child: Icon(Icons.arrow_back),
                 ),
@@ -131,7 +131,7 @@ class _ModifieruserState extends State<Modifieruser> {
             ],
           ),
         ),
-        
+
       ],
     );
   }

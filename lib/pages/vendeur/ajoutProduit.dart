@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart'; // Ajout du package
 
 import '../../models/constants.dart';
 

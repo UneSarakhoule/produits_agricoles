@@ -12,12 +12,15 @@ import 'package:agricol/pages/vendeur/ajoutProduit.dart';
 import 'package:agricol/pages/vendeur/listeProduit.dart';
 import 'package:agricol/pages/vendeur/modifierProduit.dart';
 import 'package:agricol/pages/clients/settings.dart';
+import 'package:agricol/pages/vendeur/modifierVendeur.dart';
 import 'package:agricol/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:agricol/provider/theme_provider.dart';
 import 'package:provider/provider.dart';
+
+import 'diagramme/adminDiagram.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,9 +61,11 @@ class MyApp extends StatelessWidget {
               '/ajoutProduit': (context) => const AjoutProduit(), // Route pour l'ajout d'un produit
               '/listeProduit': (context) => const Listeproduit(), // Route pour la liste des produits
               '/modifierUser': (context) => const Modifieruser(), // Route modifier l'utilisateur
+              '/modifierVendeur': (context) => const Modifiervendeur(), // Route modifier l'utilisateur
               '/modifierProduit': (context) => Modifierproduit(product: ModalRoute.of(context)!.settings.arguments as DocumentSnapshot), // Route pour la modification d'un produit
               '/historiqueCommandes': (context) => const Historiquecommandes(),
               '/parametre': (context) => SettingsClient(),
+              '/diagram': (context) => Admindiagram(),
 
             },
             debugShowCheckedModeBanner: false,
