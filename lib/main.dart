@@ -1,6 +1,5 @@
 import 'package:agricol/menu/bottomNavigation.dart';
 import 'package:agricol/pages/admin/acceuilAdmin.dart';
-import 'package:agricol/pages/clients/AcceuilClient.dart';
 import 'package:agricol/pages/clients/historiqueCommandes.dart';
 import 'package:agricol/pages/connexion2.dart';
 import 'package:agricol/pages/incription2.dart';
