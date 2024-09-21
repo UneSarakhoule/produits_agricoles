@@ -1,0 +1,9 @@
+image: flutter/flutter
+
+pipelines:
+  default:
+    - step:
+        name: Build and Test
+        script:
+          - flutter pub get
+          - flutter test
